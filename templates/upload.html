@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Upload File</h2>
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="prefix" value="{{ prefix }}">
+        <input type="hidden" name="user_id" value="{{ session.user_id }}">
+        <div class="mb-3">
+            <label class="form-label">Folder Name (optional):</label>
+            <input type="text" class="form-control" name="folder">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Files:</label>
+            <input type="file" class="form-control" name="files" multiple required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+{% endblock %}

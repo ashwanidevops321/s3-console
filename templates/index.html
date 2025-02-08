@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Benham & Reeves: {{ bucket }}</h2>
+    <div class="row row-cols-1 row-cols-md-4 g-3">
+        {% for prefix in prefixes %}
+            <div class="col">
+                <div class="card h-100 d-flex flex-column">
+                    <div class="card-body flex-grow-1">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('index', prefix=prefix + '/') }}">{{ prefix }}</a>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% for obj in objects %}
+            <div class="col">
+                <div class="card h-100 d-flex flex-column">
+                    {% if obj.Key.endswith(('.png', '.jpg', '.jpeg', '.gif')) %}
+                        <img src="{{ url_for('download', key=obj.Key) }}" class="card-img-top img-fluid" style="height: 150px; object-fit: cover;" alt="{{ obj.Key }}">
+                    {% elif obj.Key.endswith('.pdf') %}
+                        <img src="{{ url_for('static', filename='pdf-icon.png') }}" class="card-img-top img-fluid" style="height: 150px; object-fit: cover;" alt="{{ obj.Key }}">
+                    {% elif obj.Key.endswith(('.doc', '.docx', '.xls', '.xlsx')) %}
+                        <img src="{{ url_for('static', filename='file-icon.png') }}" class="card-img-top img-fluid" style="height: 150px; object-fit: cover;" alt="{{ obj.Key }}">
+                    {% else %}
+                        <div class="card-body flex-grow-1">
+                            <h5 class="card-title">{{ obj.Key }}</h5>
+                        </div>
+                    {% endif %}
+                    <div class="card-body mt-auto">
+                        <h5 class="card-title">{{ obj.Key }}</h5>
+                        <p class="card-text">Last Modified: {{ obj.LastModified }}</p>
+                        <p class="card-text">Size: {{ (obj.Size / 1024)|round(2) }} KB</p>
+                    </div>
+                    <div class="card-footer mt-auto">
+                        <div class="d-flex justify-content-start gap-1">
+                            <a href="{{ url_for('download', key=obj.Key) }}" class="btn btn-primary btn-sm">Download</a>
+                            {% if session.role == 'admin' %}
+                                <a href="{{ url_for('edit', key=obj.Key) }}" class="btn btn-warning btn-sm">Edit</a>
+                                <a href="{{ url_for('delete', key=obj.Key) }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% if not prefixes and not objects %}
+            <div class="col-12">
+                <p>No objects found</p>
+            </div>
+        {% endif %}
+    </div>
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-end">
+            {% if prev_token %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('index', token=prev_token, prefix=prefix) }}">Previous</a>
+                </li>
+            {% endif %}
+            {% if next_token %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('index', token=next_token, prefix=prefix) }}">Next</a>
+                </li>
+            {% endif %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('index', prefix=prefix.rsplit('/', 2)[0] + '/') }}">Previous</a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}

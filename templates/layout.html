@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Benhams</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+        .typing-effect {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 0.15em solid orange;
+            animation: typing 2s steps(30, end), blink 0.75s step-end infinite;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="Logo" height="30">
+            </a>
+            <div class="navbar-nav ms-auto">
+                {% if session.user %}
+                    <span class="navbar-text text-light me-3">Hi {{ session.user }}</span>
+                    <a class="nav-link" href="{{ url_for('upload') }}">Upload</a>
+                    {% if session.role == 'admin' %}
+                        <a class="nav-link" href="{{ url_for('manage_users') }}">Users</a>
+                    {% endif %}
+                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                {% endif %}
+            </div>
+            <form class="d-flex" method="post" action="{{ url_for('search') }}">
+                <input class="form-control me-2 typing-effect" type="search" placeholder="" aria-label="Search" name="search_key" id="search-input">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const folderNames = {{ folder_names|default([])|tojson }};
+        let currentFolderIndex = 0;
+        let currentCharIndex = 0;
+        const searchInput = document.getElementById('search-input');
+
+        function typeFolderName() {
+            if (currentCharIndex < folderNames[currentFolderIndex].length) {
+                searchInput.placeholder += folderNames[currentFolderIndex].charAt(currentCharIndex);
+                currentCharIndex++;
+                setTimeout(typeFolderName, 200);
+            } else {
+                setTimeout(eraseFolderName, 2000);
+            }
+        }
+
+        function eraseFolderName() {
+            if (currentCharIndex > 0) {
+                searchInput.placeholder = searchInput.placeholder.slice(0, -1);
+                currentCharIndex--;
+                setTimeout(eraseFolderName, 100);
+            } else {
+                currentFolderIndex = (currentFolderIndex + 1) % folderNames.length;
+                setTimeout(typeFolderName, 500);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            setTimeout(typeFolderName, 500);
+        });
+    </script>
+</body>
+</html>

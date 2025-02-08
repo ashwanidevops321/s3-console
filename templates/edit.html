@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Edit {{ key }}</h2>
+    <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">New Key:</label>
+            <input type="text" class="form-control" name="key" value="{{ key }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">New File (optional):</label>
+            <input type="file" class="form-control" name="file">
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+{% endblock %}
