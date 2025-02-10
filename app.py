@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import string
 import random
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -252,4 +254,4 @@ def manage_users():
     return render_template('users.html', users=users)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0",debug=True)
