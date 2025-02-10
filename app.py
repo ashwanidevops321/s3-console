@@ -6,14 +6,24 @@ from botocore.exceptions import ClientError
 from werkzeug.security import generate_password_hash, check_password_hash
 import string
 import random
+import logging
 
-app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'supersecretkey')
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
 
+# Ensure environment variables are set
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_REGION = os.environ.get('AWS_REGION', 'eu-west-2')
 S3_BUCKET = os.environ.get('S3_BUCKET')
+FLASK_SECRET_KEY = os.environ.get('FLASK_SECRET_KEY', 'supersecretkey')
+
+if not all([AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_BUCKET]):
+    logging.error("One or more required environment variables are missing.")
+    raise EnvironmentError("One or more required environment variables are missing.")
+
+app = Flask(__name__)
+app.secret_key = FLASK_SECRET_KEY
 
 s3 = boto3.client(
     's3',
@@ -73,6 +83,7 @@ def logout():
 def index():
     token = request.args.get('token')
     prefix = request.args.get('prefix', '')
+    logging.debug(f"Token: {token}, Prefix: {prefix}")
     try:
         if token:
             response = s3.list_objects_v2(Bucket=S3_BUCKET, ContinuationToken=token, Prefix=prefix, Delimiter='/', MaxKeys=32)
@@ -88,6 +99,7 @@ def index():
         
         return render_template('index.html', objects=objects, prefixes=prefixes, bucket=S3_BUCKET, next_token=next_token, prev_token=prev_token, prefix=prefix, folder_names=folder_names)
     except ClientError as e:
+        logging.error(f"Error accessing bucket: {e}")
         flash(f'Error accessing bucket: {e}')
         return render_template('index.html', objects=[], prefixes=[], bucket=S3_BUCKET, folder_names=[])
 
