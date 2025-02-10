@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import string
 import random
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
